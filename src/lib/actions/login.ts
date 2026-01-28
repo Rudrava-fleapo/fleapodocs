@@ -5,6 +5,7 @@
 import { sendEmail } from '@/lib/email';
 import { isAllowedDomain } from '@/lib/types';
 import { redirect } from 'next/navigation';
+import { headers } from 'next/headers';
 
 export async function signInWithMagicLink(email: string) {
   if (!isAllowedDomain(email)) {
@@ -18,12 +19,18 @@ export async function signInWithMagicLink(email: string) {
     process.env.SUPABASE_SECRET_KEY!
   );
   
+  const headersList = await headers();
+  const origin = headersList.get('origin');
+  
+  // Prefer origin (where the user is currently at), then explicit env var, then Vercel URL, then localhost
+  const baseUrl = origin || process.env.NEXT_PUBLIC_APP_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
+  
   // Generate OTP/Initial Link
   const { data, error } = await supabase.auth.admin.generateLink({
     type: 'magiclink',
     email: email,
     options: {
-       redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000')}/auth/confirm`
+       redirectTo: `${baseUrl}/auth/confirm`
     }
   });
 
