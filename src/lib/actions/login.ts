@@ -23,7 +23,7 @@ export async function signInWithMagicLink(email: string) {
     type: 'magiclink',
     email: email,
     options: {
-       redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/auth/confirm`
+       redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000')}/auth/confirm`
     }
   });
 
